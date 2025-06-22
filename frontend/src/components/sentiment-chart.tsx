@@ -5,15 +5,9 @@ import { Badge } from "@/components/ui/badge";
 
 interface SentimentChartProps {
   sentimentValue?: number; // 0-100 scale
-  previousValue?: number;
-  marketMood?: string;
 }
 
-export function SentimentChart({
-  sentimentValue = 40,
-  previousValue = 58,
-  marketMood = "Greed",
-}: SentimentChartProps) {
+export function SentimentChart({ sentimentValue = 40 }: SentimentChartProps) {
   // Determine sentiment category and colors
   const getSentimentInfo = (value: number) => {
     if (value >= 80)
