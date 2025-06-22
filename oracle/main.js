@@ -3,7 +3,7 @@ const PullServiceClient = require("./pullServiceClient");
 const { Web3 } = require("web3");
 
 async function main() {
-  const address = process.env.GRPC_SERVER_ADDRESS;
+  const address = process.env.GRPC_SERVER_ADDRESS_MAINNET;
   const pairIndexes = [0, 1, 10]; // BTC/USDT, ETH/USDT, SOL/USDT
   const chainType = "evm";
 
@@ -25,9 +25,9 @@ async function main() {
   });
 
   async function callContract(response) {
-    const web3 = new Web3(new Web3.providers.HttpProvider(process.env.ETHEREUM_SEPOLIA_RPC_URL));
+    const web3 = new Web3(new Web3.providers.HttpProvider(process.env.BNB_MAINNET_RPC_URL));
     const contractAbi = require("./resources/abi.json");
-    const contractAddress = process.env.PULL_CONTRACT_ADDRESS_SEPOLIA;
+    const contractAddress = process.env.PULL_CONTRACT_ADDRESS_BNB;
     const contract = new web3.eth.Contract(contractAbi, contractAddress);
     const hex = web3.utils.bytesToHex(response.proof_bytes);
 
