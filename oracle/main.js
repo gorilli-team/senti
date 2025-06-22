@@ -3,7 +3,7 @@ const PullServiceClient = require("./pullServiceClient");
 const { Web3 } = require("web3");
 
 async function main() {
-  const address = "";
+  const address = process.env.GRPC_SERVER_ADDRESS;
   const pairIndexes = [0, 1, 10]; // BTC/USDT, ETH/USDT, SOL/USDT
   const chainType = "evm";
 
@@ -25,9 +25,9 @@ async function main() {
   });
 
   async function callContract(response) {
-    const web3 = new Web3(new Web3.providers.HttpProvider(""));
+    const web3 = new Web3(new Web3.providers.HttpProvider(process.env.ETHEREUM_SEPOLIA_RPC_URL));
     const contractAbi = require("./resources/abi.json");
-    const contractAddress = "";
+    const contractAddress = process.env.PULL_CONTRACT_ADDRESS_SEPOLIA;
     const contract = new web3.eth.Contract(contractAbi, contractAddress);
     const hex = web3.utils.bytesToHex(response.proof_bytes);
 
@@ -81,10 +81,10 @@ async function main() {
     const txData = contract.methods.verifyOracleProof(hex).encodeABI();
     const gasEstimate = await contract.methods
       .verifyOracleProof(hex)
-      .estimateGas({ from: "" });
+      .estimateGas({ from: process.env.WALLET_ADDRESS });
 
     const transactionObject = {
-      from: "",
+      from: process.env.WALLET_ADDRESS,
       to: contractAddress,
       data: txData,
       gas: gasEstimate,
@@ -93,7 +93,7 @@ async function main() {
 
     const signedTransaction = await web3.eth.accounts.signTransaction(
       transactionObject,
-      ""
+      process.env.PRIVATE_KEY
     );
 
     const receipt = await web3.eth.sendSignedTransaction(
