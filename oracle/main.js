@@ -25,7 +25,9 @@ async function main() {
   });
 
   async function callContract(response) {
-    const web3 = new Web3(new Web3.providers.HttpProvider(process.env.BNB_MAINNET_RPC_URL));
+    const web3 = new Web3(
+      new Web3.providers.HttpProvider(process.env.BNB_MAINNET_RPC_URL)
+    );
     const contractAbi = require("./resources/abi.json");
     const contractAddress = process.env.PULL_CONTRACT_ADDRESS_BNB;
     const contract = new web3.eth.Contract(contractAbi, contractAddress);
@@ -105,4 +107,16 @@ async function main() {
   }
 }
 
-main();
+const INTERVAL_SECONDS = 10;
+
+(async () => {
+  await main();
+
+  setInterval(async () => {
+    try {
+      await main();
+    } catch (err) {
+      console.error("Error in main loop:", err);
+    }
+  }, INTERVAL_SECONDS * 1000);
+})();
