@@ -93,16 +93,16 @@ async function main() {
         pair: getSymbolFromId(pairId[i]),
         price: pairPrice[i],
         decimals: parseInt(pairDecimal[i]),
-        timestamp: new Date(parseInt(pairTimestamp[i]) * 1000),
+        timestamp: new Date(parseInt(pairTimestamp[i])),
       }
 
       await collection.insertOne(doc);
     }
 
-    // console.log("Pair index : ", pairId);
-    // console.log("Pair Price : ", pairPrice);
-    // console.log("Pair Decimal : ", pairDecimal);
-    // console.log("Pair Timestamp : ", pairTimestamp);
+    console.log("Pair index : ", pairId);
+    console.log("Pair Price : ", pairPrice);
+    console.log("Pair Decimal : ", pairDecimal);
+    console.log("Pair Timestamp : ", pairTimestamp);
 
     /////////// End of code for deserialising oracle proof bytes ////////////
 
@@ -133,7 +133,7 @@ async function main() {
   }
 }
 
-const INTERVAL_SECONDS = 10;
+const INTERVAL_SECONDS = 60;
 
 (async () => {
   await main();
