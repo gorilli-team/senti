@@ -1,0 +1,30 @@
+{
+  "name": "senti-app",
+  "version": "1.0.0",
+  "description": "Senti Oracle and Signal Generator Application",
+  "main": "oracle/main.js",
+  "scripts": {
+    "start": "node oracle/main.js",
+    "dev": "nodemon oracle/main.js",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "postinstall": "pip3 install -r signal-generator/requirements.txt"
+  },
+  "keywords": [
+    "oracle",
+    "trading",
+    "signals",
+    "blockchain"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@grpc/grpc-js": "^1.13.4",
+    "@grpc/proto-loader": "^0.7.15",
+    "dotenv": "^16.5.0",
+    "mongodb": "^6.17.0",
+    "web3": "^4.16.0"
+  },
+  "engines": {
+    "node": "18.x"
+  }
+}
