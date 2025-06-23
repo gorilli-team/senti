@@ -38,11 +38,13 @@ mongoose
 const dataRoutes = require("./routes/data");
 const priceFeedsRoutes = require("./routes/priceFeeds");
 const rsiSignalsRoutes = require("./routes/rsiSignals");
+const fearGreedRoutes = require("./routes/fearGreed");
 
 // Routes
 app.use("/api/data", dataRoutes);
 app.use("/api/price-feeds", priceFeedsRoutes);
 app.use("/api/rsi-signals", rsiSignalsRoutes);
+app.use("/api/fear-greed", fearGreedRoutes);
 
 // Health check endpoint
 app.get("/health", (req, res) => {
@@ -63,6 +65,7 @@ app.get("/", (req, res) => {
       data: "/api/data",
       priceFeeds: "/api/price-feeds",
       rsiSignals: "/api/rsi-signals",
+      fearGreed: "/api/fear-greed",
     },
   });
 });
