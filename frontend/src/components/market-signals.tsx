@@ -130,7 +130,7 @@ export function MarketSignals() {
     try {
       const now = Date.now();
       const data = await fetchAPI(
-        `${API_ENDPOINTS.data}?symbol=${encodeURIComponent(symbol)}&limit=1000`
+        `${API_ENDPOINTS.data}?symbol=${encodeURIComponent(symbol)}&limit=200`
       );
       console.log("Fetched data for", symbol, data.data);
       const prices = (data.data || []).filter((d: MarketSignal) => {
@@ -185,9 +185,9 @@ export function MarketSignals() {
     setMounted(true);
     fetchSignals();
 
-    // Refresh data every 30 seconds
-    const interval = setInterval(fetchSignals, 30000);
-    return () => clearInterval(interval);
+    // Remove the automatic refresh interval
+    // const interval = setInterval(fetchSignals, 30000);
+    // return () => clearInterval(interval);
   }, []);
 
   useEffect(() => {
