@@ -6,7 +6,7 @@
   <p align="center" style="font-size: 24px">
     <strong>Automated trading based on market sentiment.</strong>
     <br />
-    <a href="" style="font-size: 16px"><strong>Visit the website »</strong></a>
+    <a href="https://senti-permissionless.vercel.app/" style="font-size: 16px"><strong>Visit the website »</strong></a>
     <br />
     <div>
     <div style="display: flex; flex-direction: row; justify-content: center; align-items: center">
