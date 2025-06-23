@@ -2,6 +2,7 @@
 
 import type React from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import {
   BarChart3,
   Calendar,
@@ -10,6 +11,7 @@ import {
   FileText,
   TrendingUp,
   CreditCard,
+  Brain,
 } from "lucide-react";
 
 import {
@@ -31,7 +33,11 @@ const items = [
     title: "Market Signals",
     url: "/",
     icon: TrendingUp,
-    isActive: true,
+  },
+  {
+    title: "Market Sentiment",
+    url: "/sentiment",
+    icon: Brain,
   },
   {
     title: "My Portfolio",
@@ -69,6 +75,8 @@ const secondaryItems = [
 ];
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const pathname = usePathname();
+
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
@@ -89,7 +97,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             <SidebarMenu>
               {items.map((item) => (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild isActive={item.isActive}>
+                  <SidebarMenuButton asChild isActive={pathname === item.url}>
                     <Link href={item.url}>
                       <item.icon />
                       <span>{item.title}</span>
