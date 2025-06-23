@@ -218,7 +218,20 @@ export default function ChartPage({
       latestData.rsi_signal
     );
     const signalText = getSignalText(signalType);
-    const priceChange = latestData.sentiment * 100;
+
+    // Calculate 24h price change
+    let priceChange24h = 0;
+    if (priceData.length > 1) {
+      const now = Date.now();
+      const last24h = priceData.filter(
+        (d) => new Date(d.timestamp).getTime() >= now - 24 * 60 * 60 * 1000
+      );
+      if (last24h.length > 1) {
+        const oldest = last24h[last24h.length - 1].price;
+        const latest = last24h[0].price;
+        priceChange24h = ((latest - oldest) / oldest) * 100;
+      }
+    }
 
     return (
       <div className="flex flex-1 flex-col gap-6 p-6">
@@ -234,17 +247,17 @@ export default function ChartPage({
                 {formatPrice(latestData.price)}
               </p>
               <div className="flex items-center">
-                {priceChange > 0 ? (
+                {priceChange24h > 0 ? (
                   <TrendingUp className="h-4 w-4 text-green-500 mr-1" />
                 ) : (
                   <TrendingDown className="h-4 w-4 text-red-500 mr-1" />
                 )}
                 <span
                   className={
-                    priceChange > 0 ? "text-green-500" : "text-red-500"
+                    priceChange24h > 0 ? "text-green-500" : "text-red-500"
                   }
                 >
-                  {Math.abs(priceChange).toFixed(2)}%
+                  {Math.abs(priceChange24h).toFixed(2)}%
                 </span>
               </div>
             </div>
