@@ -66,10 +66,6 @@ export function Prices() {
     };
 
     fetchPrices();
-
-    // Refresh prices every 30 seconds
-    const interval = setInterval(fetchPrices, 30000);
-    return () => clearInterval(interval);
   }, []);
 
   const formatPrice = (price: string) => {
