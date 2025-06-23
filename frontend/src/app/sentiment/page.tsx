@@ -7,7 +7,6 @@ import { API_ENDPOINTS, fetchAPI } from "@/lib/api";
 import { AppSidebar } from "@/components/app-sidebar";
 import { DashboardHeader } from "@/components/dashboard-header";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
-import Image from "next/image";
 
 interface SentimentDataPoint {
   timestamp: string;

@@ -32,7 +32,7 @@ const items = [
   },
   {
     title: "Trading History",
-    url: "#",
+    url: "/trading-history",
     icon: FileText,
   },
 ];
