@@ -1,6 +1,19 @@
 require("dotenv").config();
 const PullServiceClient = require("./pullServiceClient");
 const { Web3 } = require("web3");
+const { MongoClient } = require("mongodb")
+const { getSymbolFromId } = require("./utils/utils.js")
+
+const mongoClient = new MongoClient(process.env.MONGODB_CONNECTION_STRING);
+let mongoDb;
+
+async function initMongo() {
+  if (!mongoDb) {
+    await mongoClient.connect();
+    mongoDb = mongoClient.db("oracle")
+  }
+  return mongoDb.collection("price_feeds")
+}
 
 async function main() {
   const address = process.env.GRPC_SERVER_ADDRESS_MAINNET;
@@ -73,6 +86,19 @@ async function main() {
       }
     }
 
+    const collection = await initMongo();
+
+    for (let i = 0; i < pairId.length; i++) {
+      const doc = {
+        pair: getSymbolFromId(pairId[i]),
+        price: pairPrice[i],
+        decimals: parseInt(pairDecimal[i]),
+        timestamp: new Date(parseInt(pairTimestamp[i])),
+      }
+
+      await collection.insertOne(doc);
+    }
+
     console.log("Pair index : ", pairId);
     console.log("Pair Price : ", pairPrice);
     console.log("Pair Decimal : ", pairDecimal);
@@ -107,7 +133,7 @@ async function main() {
   }
 }
 
-const INTERVAL_SECONDS = 10;
+const INTERVAL_SECONDS = 60;
 
 (async () => {
   await main();
