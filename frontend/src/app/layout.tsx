@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Senti",
-  description: "Act on market signals to align with the community sentiment",
+  description: "Act on market signals to align with sentiment",
 };
 
 export default function RootLayout({

@@ -3,16 +3,7 @@
 import type React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import {
-  BarChart3,
-  Calendar,
-  Inbox,
-  Settings,
-  FileText,
-  TrendingUp,
-  CreditCard,
-  Brain,
-} from "lucide-react";
+import { FileText, TrendingUp, CreditCard, Brain } from "lucide-react";
 
 import {
   Sidebar,
@@ -40,37 +31,9 @@ const items = [
     icon: Brain,
   },
   {
-    title: "My Portfolio",
-    url: "#",
-    icon: CreditCard,
-  },
-  {
-    title: "Watchlist",
-    url: "#",
-    icon: BarChart3,
-  },
-  {
     title: "Trading History",
     url: "#",
     icon: FileText,
-  },
-  {
-    title: "Alerts",
-    url: "#",
-    icon: Calendar,
-  },
-];
-
-const secondaryItems = [
-  {
-    title: "Settings",
-    url: "#",
-    icon: Settings,
-  },
-  {
-    title: "Support",
-    url: "#",
-    icon: Inbox,
   },
 ];
 
@@ -86,7 +49,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           </div>
           <div className="grid flex-1 text-left text-sm leading-tight">
             <span className="truncate font-semibold">Senti 🦍</span>
-            <span className="text-xs">Align with the community sentiment</span>
+            <span className="text-xs">Align with sentiment</span>
           </div>
         </div>
       </SidebarHeader>
@@ -98,22 +61,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               {items.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild isActive={pathname === item.url}>
-                    <Link href={item.url}>
-                      <item.icon />
-                      <span>{item.title}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-        <SidebarGroup className="mt-auto">
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {secondaryItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
                     <Link href={item.url}>
                       <item.icon />
                       <span>{item.title}</span>
