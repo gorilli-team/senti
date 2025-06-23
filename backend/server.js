@@ -31,12 +31,14 @@ const dataRoutes = require("./routes/data");
 const priceFeedsRoutes = require("./routes/priceFeeds");
 const rsiSignalsRoutes = require("./routes/rsiSignals");
 const fearGreedRoutes = require("./routes/fearGreed");
+const tradingHistoryRoutes = require("./routes/tradingHistory");
 
 // Routes
 app.use("/api/data", dataRoutes);
 app.use("/api/price-feeds", priceFeedsRoutes);
 app.use("/api/rsi-signals", rsiSignalsRoutes);
 app.use("/api/fear-greed", fearGreedRoutes);
+app.use("/api/trading-history", tradingHistoryRoutes);
 
 // Health check endpoint
 app.get("/health", (req, res) => {
@@ -58,6 +60,7 @@ app.get("/", (req, res) => {
       priceFeeds: "/api/price-feeds",
       rsiSignals: "/api/rsi-signals",
       fearGreed: "/api/fear-greed",
+      tradingHistory: "/api/trading-history",
     },
   });
 });
