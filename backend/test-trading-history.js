@@ -1,6 +1,6 @@
 const axios = require("axios");
 
-const BASE_URL = "http://localhost:3002";
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
 async function testTradingHistory() {
   console.log("🚀 Testing Trading History API...\n");
