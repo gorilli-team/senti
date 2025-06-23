@@ -45,4 +45,4 @@ It also serves as a tool for information aggregation, providing an accurate pict
 ## 3. Submission details
 
 - GitHub Repository: https://github.com/gorilli-team/senti
-- Link to the project: 
+- Link to the project: [senti-permissionless.vercel.app](https://senti-permissionless.vercel.app/)
