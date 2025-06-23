@@ -4,7 +4,7 @@
 PORT=${PORT:-8000}
 
 # Run debug information
-echo "=== Starting Senti App ==="
+echo "=== Starting Senti Backend ==="
 ./debug-buildpacks.sh
 
 # Check if Node.js is available
