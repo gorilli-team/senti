@@ -32,9 +32,15 @@ interface MarketSignal {
 }
 
 const signalColors = {
-  buy: "bg-green-100 text-green-800 border-green-200",
-  sell: "bg-red-100 text-red-800 border-red-200",
-  hold: "bg-yellow-100 text-yellow-800 border-yellow-200",
+  buy: "bg-gradient-to-r from-green-50 to-emerald-50 text-green-800 border-green-200 shadow-sm",
+  sell: "bg-gradient-to-r from-red-50 to-rose-50 text-red-800 border-red-200 shadow-sm",
+  hold: "bg-gradient-to-r from-yellow-50 to-amber-50 text-yellow-800 border-yellow-200 shadow-sm",
+};
+
+const cardGradients = {
+  buy: "bg-gradient-to-br from-green-50 via-white to-emerald-50 border-l-4 border-l-green-500",
+  sell: "bg-gradient-to-br from-red-50 via-white to-rose-50 border-l-4 border-l-red-500",
+  hold: "bg-gradient-to-br from-yellow-50 via-white to-amber-50 border-l-4 border-l-yellow-500",
 };
 
 const confidenceColor = (confidence: number) => {
@@ -253,7 +259,7 @@ export function MarketSignals() {
           </CardContent>
         </Card>
       ) : (
-        <div className="grid gap-4">
+        <div className="grid gap-3">
           {signals.map((signal) => {
             const signalType = getSignalType(
               signal.sentiment,
@@ -267,37 +273,39 @@ export function MarketSignals() {
             return (
               <Card
                 key={signal._id}
-                className="hover:shadow-md transition-shadow"
+                className={`hover:shadow-md transition-shadow ${cardGradients[signalType]}`}
               >
-                <CardContent className="p-6">
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="flex items-center space-x-3">
+                <CardContent className="px-3 py-1">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center space-x-2">
                       <div>
-                        <h3 className="font-semibold text-lg">
+                        <h3 className="font-semibold text-sm">
                           {signal.symbol}
                         </h3>
-                        <p className="text-sm text-muted-foreground">
+                        <p className="text-xs text-muted-foreground">
                           {getFearGreedText(signal.fearGreedIndex)}
                         </p>
                       </div>
-                      <Badge className={signalColors[signalType]}>
+                      <Badge className={`text-xs ${signalColors[signalType]}`}>
                         {signalText}
                       </Badge>
                     </div>
                     <div className="text-right">
-                      <p className="font-bold text-lg">
+                      <p className="font-bold text-sm bg-white/80 rounded px-2 py-0.5 inline-block">
                         {formatPrice(signal.price)}
                       </p>
-                      <div className="flex items-center text-sm">
+                      <div className="flex items-center text-xs mt-0.5">
                         {priceChange > 0 ? (
                           <TrendingUp className="h-3 w-3 text-green-500 mr-1" />
                         ) : (
                           <TrendingDown className="h-3 w-3 text-red-500 mr-1" />
                         )}
                         <span
-                          className={
-                            priceChange > 0 ? "text-green-500" : "text-red-500"
-                          }
+                          className={`font-medium px-1 py-0.5 rounded text-xs ${
+                            priceChange > 0
+                              ? "text-green-700 bg-green-100"
+                              : "text-red-700 bg-red-100"
+                          }`}
                         >
                           {Math.abs(priceChange).toFixed(2)}%
                         </span>
@@ -305,20 +313,22 @@ export function MarketSignals() {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
-                    <div className="space-y-1">
-                      <p className="text-xs text-muted-foreground flex items-center">
+                  <div className="grid grid-cols-4 gap-2 mb-2">
+                    <div className="space-y-0.5 bg-white/60 rounded p-1">
+                      <p className="text-xs text-muted-foreground flex items-center font-medium">
                         <Target className="h-3 w-3 mr-1" />
                         RSI
                       </p>
-                      <p className="font-medium">
+                      <p className="font-bold text-xs">
                         {signal.technicalIndicators.rsi.toFixed(1)}
                       </p>
                     </div>
-                    <div className="space-y-1">
-                      <p className="text-xs text-muted-foreground">Sentiment</p>
+                    <div className="space-y-0.5 bg-white/60 rounded p-1">
+                      <p className="text-xs text-muted-foreground font-medium">
+                        Sentiment
+                      </p>
                       <p
-                        className={`font-medium ${
+                        className={`font-bold text-xs ${
                           signal.sentiment > 0
                             ? "text-green-600"
                             : signal.sentiment < 0
@@ -329,26 +339,28 @@ export function MarketSignals() {
                         {(signal.sentiment * 100).toFixed(1)}%
                       </p>
                     </div>
-                    <div className="space-y-1">
-                      <p className="text-xs text-muted-foreground">
+                    <div className="space-y-0.5 bg-white/60 rounded p-1">
+                      <p className="text-xs text-muted-foreground font-medium">
                         Fear/Greed
                       </p>
-                      <p className="font-medium">{signal.fearGreedIndex}</p>
+                      <p className="font-bold text-xs">
+                        {signal.fearGreedIndex}
+                      </p>
                     </div>
-                    <div className="space-y-1">
-                      <p className="text-xs text-muted-foreground flex items-center">
+                    <div className="space-y-0.5 bg-white/60 rounded p-1">
+                      <p className="text-xs text-muted-foreground flex items-center font-medium">
                         <Clock className="h-3 w-3 mr-1" />
                         Updated
                       </p>
-                      <p className="font-medium">
+                      <p className="font-bold text-xs">
                         {formatTimestamp(signal.timestamp)}
                       </p>
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-4">
-                      <div className="text-sm">
+                  <div className="flex items-center justify-between bg-white/40 rounded p-1">
+                    <div className="flex items-center space-x-2">
+                      <div className="text-xs bg-white/80 rounded px-1.5 py-0.5">
                         <span className="text-muted-foreground">
                           Confidence:{" "}
                         </span>
@@ -360,23 +372,27 @@ export function MarketSignals() {
                           {confidence}%
                         </span>
                       </div>
-                      <div className="text-sm text-muted-foreground">
+                      <div className="text-xs text-muted-foreground bg-white/60 rounded px-1.5 py-0.5">
                         Source: {signal.metadata.source}
                       </div>
                     </div>
-                    <div className="flex space-x-2">
-                      <Button size="sm" variant="outline">
+                    <div className="flex space-x-1">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="h-6 px-2 text-xs bg-white/80 hover:bg-white"
+                      >
                         Set Alert
                       </Button>
                       <Button
                         size="sm"
-                        className={
+                        className={`h-6 px-2 text-xs font-medium shadow-sm ${
                           signalType === "buy"
-                            ? "bg-green-600 hover:bg-green-700"
+                            ? "bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white"
                             : signalType === "sell"
-                            ? "bg-red-600 hover:bg-red-700"
-                            : "bg-yellow-600 hover:bg-yellow-700"
-                        }
+                            ? "bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 text-white"
+                            : "bg-gradient-to-r from-yellow-600 to-amber-600 hover:from-yellow-700 hover:to-amber-700 text-white"
+                        }`}
                       >
                         {signalType === "buy"
                           ? "Buy Now"
