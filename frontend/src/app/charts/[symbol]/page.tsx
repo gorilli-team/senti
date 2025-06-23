@@ -16,6 +16,7 @@ import { fetchAPI, API_ENDPOINTS } from "@/lib/api";
 import { AppSidebar } from "@/components/app-sidebar";
 import { DashboardHeader } from "@/components/dashboard-header";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import LightweightChart from "@/components/LightweightChart";
 
 interface PriceData {
   _id: string;
@@ -37,11 +38,7 @@ interface PriceData {
 
 interface ChartData {
   time: number;
-  open: number;
-  high: number;
-  low: number;
-  close: number;
-  volume: number;
+  price: number;
 }
 
 const formatPrice = (price: number): string => {
@@ -99,73 +96,6 @@ const getFearGreedText = (index: number): string => {
   return "Extreme Greed";
 };
 
-// Simple candlestick chart component
-const CandlestickChart = ({ data }: { data: ChartData[] }) => {
-  if (!data || data.length === 0) {
-    return (
-      <div className="h-64 bg-gray-100 rounded-lg flex items-center justify-center">
-        <p className="text-gray-500">No chart data available</p>
-      </div>
-    );
-  }
-
-  const maxPrice = Math.max(...data.map((d) => d.high));
-  const minPrice = Math.min(...data.map((d) => d.low));
-  const priceRange = maxPrice - minPrice;
-
-  return (
-    <div className="h-64 bg-white border rounded-lg p-4">
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="font-semibold">Price Chart</h3>
-        <div className="text-sm text-gray-500">{data.length} data points</div>
-      </div>
-
-      <div className="relative h-48">
-        {data.map((candle, index) => {
-          const isGreen = candle.close >= candle.open;
-          const x = (index / (data.length - 1)) * 100;
-          const bodyHeight =
-            (Math.abs(candle.close - candle.open) / priceRange) * 100;
-          const bodyY =
-            (Math.min(candle.open, candle.close) / priceRange) * 100;
-          const wickHeight = ((candle.high - candle.low) / priceRange) * 100;
-          const wickY = (candle.low / priceRange) * 100;
-
-          return (
-            <div key={index} className="absolute" style={{ left: `${x}%` }}>
-              {/* Wick */}
-              <div
-                className="absolute w-0.5 bg-gray-400"
-                style={{
-                  height: `${wickHeight}%`,
-                  top: `${wickY}%`,
-                  transform: "translateX(-50%)",
-                }}
-              />
-              {/* Body */}
-              <div
-                className={`absolute w-2 rounded-sm ${
-                  isGreen ? "bg-green-500" : "bg-red-500"
-                }`}
-                style={{
-                  height: `${Math.max(bodyHeight, 1)}%`,
-                  top: `${bodyY}%`,
-                  transform: "translateX(-50%)",
-                }}
-              />
-            </div>
-          );
-        })}
-      </div>
-
-      <div className="flex justify-between text-xs text-gray-500 mt-2">
-        <span>${minPrice.toFixed(2)}</span>
-        <span>${maxPrice.toFixed(2)}</span>
-      </div>
-    </div>
-  );
-};
-
 export default function ChartPage({
   params,
 }: {
@@ -196,18 +126,9 @@ export default function ChartPage({
         // Convert price data to chart format
         const chartDataPoints =
           data.data?.map((item: PriceData) => {
-            const basePrice = item.price;
-            const volatility = 0.02; // 2% volatility
-            const randomChange = (Math.random() - 0.5) * volatility;
-
             return {
               time: new Date(item.timestamp).getTime(),
-              open: basePrice * (1 + randomChange),
-              high: basePrice * (1 + randomChange + Math.random() * 0.01),
-              low: basePrice * (1 + randomChange - Math.random() * 0.01),
-              close:
-                basePrice * (1 + randomChange + (Math.random() - 0.5) * 0.005),
-              volume: Math.random() * 1000000,
+              price: item.price,
             };
           }) || [];
 
@@ -357,7 +278,7 @@ export default function ChartPage({
               <CardTitle>Price Chart</CardTitle>
             </CardHeader>
             <CardContent>
-              <CandlestickChart data={chartData} />
+              <LightweightChart data={chartData} height={400} />
             </CardContent>
           </Card>
 
