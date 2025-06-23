@@ -357,7 +357,7 @@ export default function TradingHistoryPage() {
                           <td className="py-3 px-4">
                             {trade.tx_hash ? (
                               <a
-                                href={`https://testnet.bscscan.com/tx/${trade.tx_hash}`}
+                                href={`https://testnet.bscscan.com/tx/0x${trade.tx_hash}`}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="text-blue-600 hover:text-blue-800 text-xs"

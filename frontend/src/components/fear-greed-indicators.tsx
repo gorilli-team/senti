@@ -1,21 +1,50 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TrendingDown, TrendingUp, Activity } from "lucide-react";
+import { API_ENDPOINTS, fetchAPI } from "@/lib/api";
 
-interface FearGreedIndicatorsProps {
-  fearMoves?: number;
-  greedMoves?: number;
-  totalMoves?: number;
-}
+export function FearGreedIndicators() {
+  const [fearMoves, setFearMoves] = useState(0);
+  const [greedMoves, setGreedMoves] = useState(0);
+  const [totalMoves, setTotalMoves] = useState(0);
+  const [sentimentScore, setSentimentScore] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-export function FearGreedIndicators({
-  fearMoves = 12,
-  greedMoves = 8,
-  totalMoves = 20,
-}: FearGreedIndicatorsProps) {
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const stats = await fetchAPI(`${API_ENDPOINTS.tradingHistory}/stats`);
+        const fear = stats.sellCount || 0;
+        const greed = stats.buyCount || 0;
+        const total = fear + greed;
+        setFearMoves(fear);
+        setGreedMoves(greed);
+        setTotalMoves(total);
+        // Sentiment score: 1 (all fear) to 100 (all greed)
+        setSentimentScore(total > 0 ? (greed / total) * 99 + 1 : 50);
+      } catch (err) {
+        setError("Failed to load trading stats");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchStats();
+  }, []);
+
   const fearPercentage = totalMoves > 0 ? (fearMoves / totalMoves) * 100 : 0;
   const greedPercentage = totalMoves > 0 ? (greedMoves / totalMoves) * 100 : 0;
+
+  if (loading) {
+    return <div className="p-6">Loading...</div>;
+  }
+  if (error) {
+    return <div className="p-6 text-red-600">{error}</div>;
+  }
 
   return (
     <div className="space-y-3">
@@ -60,7 +89,6 @@ export function FearGreedIndicators({
                   style={{ width: `${fearPercentage}%` }}
                 ></div>
               </div>
-              <div className="text-xs text-red-600">Avg loss: xxx</div>
             </div>
           </CardContent>
         </Card>
@@ -93,6 +121,33 @@ export function FearGreedIndicators({
                 ></div>
               </div>
               <div className="text-xs text-green-600">Avg gain: xxx</div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Sentiment Score */}
+      <div className="mt-4">
+        <Card className="border-blue-200 bg-blue-50/50">
+          <CardHeader className="pb-2">
+            <CardTitle className="flex items-center space-x-2 text-blue-700 text-base">
+              <span>Sentiment Score</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="pt-0">
+            <div className="flex items-center space-x-4">
+              <span className="text-3xl font-bold text-blue-700">
+                {sentimentScore.toFixed(0)}
+              </span>
+              <span className="text-xs text-blue-600">
+                (
+                {sentimentScore > 50
+                  ? "Greed-dominant"
+                  : sentimentScore < 50
+                  ? "Fear-dominant"
+                  : "Neutral"}
+                )
+              </span>
             </div>
           </CardContent>
         </Card>
