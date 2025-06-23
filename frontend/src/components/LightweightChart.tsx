@@ -93,7 +93,7 @@ const LightweightChart: React.FC<Props> = ({
       // Transform data
       let chartData = data
         .map((item) => ({
-          time: Math.floor(item.time / 1000) as Time, // Convert to seconds
+          time: Math.floor((item.time - 4 * 60 * 60 * 1000) / 1000) as Time, // Subtract 4 hours and convert to seconds
           value: item.price,
         }))
         .sort((a, b) => {
@@ -189,8 +189,22 @@ const LightweightChart: React.FC<Props> = ({
 
           const dateStr =
             typeof param.time === "number"
-              ? new Date(param.time * 1000).toLocaleString()
-              : new Date(param.time.toString()).toLocaleString();
+              ? new Date(param.time * 1000).toLocaleString(undefined, {
+                  year: "numeric",
+                  month: "short",
+                  day: "numeric",
+                  hour: "2-digit",
+                  minute: "2-digit",
+                  second: "2-digit",
+                })
+              : new Date(param.time.toString()).toLocaleString(undefined, {
+                  year: "numeric",
+                  month: "short",
+                  day: "numeric",
+                  hour: "2-digit",
+                  minute: "2-digit",
+                  second: "2-digit",
+                });
 
           toolTip.innerHTML = `
             <div style="font-weight:500">${dateStr}</div>
