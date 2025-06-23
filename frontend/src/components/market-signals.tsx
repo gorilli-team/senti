@@ -11,6 +11,7 @@ import {
   RefreshCw,
 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { fetchAPI, API_ENDPOINTS } from "@/lib/api";
 
 interface MarketSignal {
@@ -116,6 +117,7 @@ const formatTimestamp = (timestamp: string): string => {
 };
 
 export function MarketSignals() {
+  const router = useRouter();
   const [signals, setSignals] = useState<MarketSignal[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -134,6 +136,11 @@ export function MarketSignals() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleSignalClick = (signal: MarketSignal) => {
+    // Navigate to the charts page for this token
+    router.push(`/charts/${encodeURIComponent(signal.symbol)}`);
   };
 
   useEffect(() => {
@@ -161,7 +168,7 @@ export function MarketSignals() {
             Loading...
           </Badge>
         </div>
-        <div className="grid gap-4">
+        <div className="grid gap-3">
           {[1, 2, 3].map((i) => (
             <Card key={i} className="animate-pulse">
               <CardContent className="p-6">
@@ -190,7 +197,7 @@ export function MarketSignals() {
             Loading...
           </Badge>
         </div>
-        <div className="grid gap-4">
+        <div className="grid gap-3">
           {[1, 2, 3].map((i) => (
             <Card key={i} className="animate-pulse">
               <CardContent className="p-6">
@@ -273,7 +280,8 @@ export function MarketSignals() {
             return (
               <Card
                 key={signal._id}
-                className={`hover:shadow-md transition-shadow ${cardGradients[signalType]}`}
+                className={`hover:shadow-md transition-all duration-200 cursor-pointer hover:scale-[1.02] ${cardGradients[signalType]}`}
+                onClick={() => handleSignalClick(signal)}
               >
                 <CardContent className="px-3 py-1">
                   <div className="flex items-center justify-between mb-2">
@@ -359,8 +367,11 @@ export function MarketSignals() {
                   </div>
 
                   <div className="flex items-center justify-between bg-white/40 rounded p-1">
-                    <div className="flex items-center space-x-2">
-                      <div className="text-xs bg-white/80 rounded px-1.5 py-0.5">
+                    <div className="flex items-center space-x-1">
+                      <div className="text-xs text-muted-foreground bg-white/60 rounded px-1.5 py-0.5">
+                        Source: {signal.metadata.source}
+                      </div>
+                      <div className="text-xs text-muted-foreground bg-white/80 rounded px-1.5 py-0.5">
                         <span className="text-muted-foreground">
                           Confidence:{" "}
                         </span>
@@ -372,18 +383,8 @@ export function MarketSignals() {
                           {confidence}%
                         </span>
                       </div>
-                      <div className="text-xs text-muted-foreground bg-white/60 rounded px-1.5 py-0.5">
-                        Source: {signal.metadata.source}
-                      </div>
                     </div>
                     <div className="flex space-x-1">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="h-6 px-2 text-xs bg-white/80 hover:bg-white"
-                      >
-                        Set Alert
-                      </Button>
                       <Button
                         size="sm"
                         className={`h-6 px-2 text-xs font-medium shadow-sm ${

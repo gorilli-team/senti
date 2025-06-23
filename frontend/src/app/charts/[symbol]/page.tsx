@@ -1,0 +1,461 @@
+"use client";
+
+import { useEffect, useState, use } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  ArrowLeft,
+  TrendingUp,
+  TrendingDown,
+  Target,
+  Clock,
+} from "lucide-react";
+import { useRouter } from "next/navigation";
+import { fetchAPI, API_ENDPOINTS } from "@/lib/api";
+import { AppSidebar } from "@/components/app-sidebar";
+import { DashboardHeader } from "@/components/dashboard-header";
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+
+interface PriceData {
+  _id: string;
+  symbol: string;
+  price: number;
+  sentiment: number;
+  fearGreedIndex: number;
+  technicalIndicators: {
+    rsi: number;
+  };
+  rsi_signal?: number;
+  timestamp: string;
+  metadata: {
+    source: string;
+    confidence: number;
+    tags: string[];
+  };
+}
+
+interface ChartData {
+  time: number;
+  open: number;
+  high: number;
+  low: number;
+  close: number;
+  volume: number;
+}
+
+const formatPrice = (price: number): string => {
+  if (price >= 1000) {
+    return `$${price.toLocaleString("en-US", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    })}`;
+  }
+  return `$${price.toFixed(4)}`;
+};
+
+const formatTimestamp = (timestamp: string): string => {
+  return new Date(timestamp).toLocaleString();
+};
+
+const getSignalType = (
+  sentiment: number,
+  rsi: number,
+  rsiSignal?: number
+): "buy" | "sell" | "hold" => {
+  if (rsiSignal !== undefined) {
+    switch (rsiSignal) {
+      case 1:
+        return "buy";
+      case 2:
+        return "sell";
+      case 0:
+      default:
+        return "hold";
+    }
+  }
+
+  if (sentiment > 0.1 && rsi < 70) return "buy";
+  if (sentiment < -0.1 || rsi > 70) return "sell";
+  return "hold";
+};
+
+const getSignalText = (signalType: "buy" | "sell" | "hold"): string => {
+  switch (signalType) {
+    case "buy":
+      return "Strong Buy";
+    case "sell":
+      return "Sell";
+    case "hold":
+      return "Hold";
+  }
+};
+
+const getFearGreedText = (index: number): string => {
+  if (index <= 25) return "Extreme Fear";
+  if (index <= 45) return "Fear";
+  if (index <= 55) return "Neutral";
+  if (index <= 75) return "Greed";
+  return "Extreme Greed";
+};
+
+// Simple candlestick chart component
+const CandlestickChart = ({ data }: { data: ChartData[] }) => {
+  if (!data || data.length === 0) {
+    return (
+      <div className="h-64 bg-gray-100 rounded-lg flex items-center justify-center">
+        <p className="text-gray-500">No chart data available</p>
+      </div>
+    );
+  }
+
+  const maxPrice = Math.max(...data.map((d) => d.high));
+  const minPrice = Math.min(...data.map((d) => d.low));
+  const priceRange = maxPrice - minPrice;
+
+  return (
+    <div className="h-64 bg-white border rounded-lg p-4">
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="font-semibold">Price Chart</h3>
+        <div className="text-sm text-gray-500">{data.length} data points</div>
+      </div>
+
+      <div className="relative h-48">
+        {data.map((candle, index) => {
+          const isGreen = candle.close >= candle.open;
+          const x = (index / (data.length - 1)) * 100;
+          const bodyHeight =
+            (Math.abs(candle.close - candle.open) / priceRange) * 100;
+          const bodyY =
+            (Math.min(candle.open, candle.close) / priceRange) * 100;
+          const wickHeight = ((candle.high - candle.low) / priceRange) * 100;
+          const wickY = (candle.low / priceRange) * 100;
+
+          return (
+            <div key={index} className="absolute" style={{ left: `${x}%` }}>
+              {/* Wick */}
+              <div
+                className="absolute w-0.5 bg-gray-400"
+                style={{
+                  height: `${wickHeight}%`,
+                  top: `${wickY}%`,
+                  transform: "translateX(-50%)",
+                }}
+              />
+              {/* Body */}
+              <div
+                className={`absolute w-2 rounded-sm ${
+                  isGreen ? "bg-green-500" : "bg-red-500"
+                }`}
+                style={{
+                  height: `${Math.max(bodyHeight, 1)}%`,
+                  top: `${bodyY}%`,
+                  transform: "translateX(-50%)",
+                }}
+              />
+            </div>
+          );
+        })}
+      </div>
+
+      <div className="flex justify-between text-xs text-gray-500 mt-2">
+        <span>${minPrice.toFixed(2)}</span>
+        <span>${maxPrice.toFixed(2)}</span>
+      </div>
+    </div>
+  );
+};
+
+export default function ChartPage({
+  params,
+}: {
+  params: Promise<{ symbol: string }>;
+}) {
+  const router = useRouter();
+  const [priceData, setPriceData] = useState<PriceData[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [chartData, setChartData] = useState<ChartData[]>([]);
+
+  // Unwrap the params Promise
+  const { symbol } = use(params);
+  const decodedSymbol = decodeURIComponent(symbol);
+
+  useEffect(() => {
+    const fetchPriceData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        // Fetch price data for the specific symbol
+        const data = await fetchAPI(
+          `${API_ENDPOINTS.data}?symbol=${decodedSymbol}&limit=100`
+        );
+        setPriceData(data.data || []);
+
+        // Convert price data to chart format
+        const chartDataPoints =
+          data.data?.map((item: PriceData) => {
+            const basePrice = item.price;
+            const volatility = 0.02; // 2% volatility
+            const randomChange = (Math.random() - 0.5) * volatility;
+
+            return {
+              time: new Date(item.timestamp).getTime(),
+              open: basePrice * (1 + randomChange),
+              high: basePrice * (1 + randomChange + Math.random() * 0.01),
+              low: basePrice * (1 + randomChange - Math.random() * 0.01),
+              close:
+                basePrice * (1 + randomChange + (Math.random() - 0.5) * 0.005),
+              volume: Math.random() * 1000000,
+            };
+          }) || [];
+
+        setChartData(chartDataPoints);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "An error occurred");
+        console.error("Error fetching price data:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPriceData();
+  }, [decodedSymbol]);
+
+  const renderContent = () => {
+    if (loading) {
+      return (
+        <div className="flex flex-1 flex-col gap-6 p-6">
+          <div className="flex items-center space-x-4 mb-6">
+            <Button variant="outline" size="sm" onClick={() => router.back()}>
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back
+            </Button>
+            <div className="h-6 bg-gray-200 rounded w-32 animate-pulse"></div>
+          </div>
+          <div className="grid gap-6">
+            <Card className="animate-pulse">
+              <CardContent className="p-6">
+                <div className="h-64 bg-gray-200 rounded"></div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      );
+    }
+
+    if (error) {
+      return (
+        <div className="flex flex-1 flex-col gap-6 p-6">
+          <div className="flex items-center space-x-4 mb-6">
+            <Button variant="outline" size="sm" onClick={() => router.back()}>
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back
+            </Button>
+          </div>
+          <Card>
+            <CardContent className="p-6 text-center">
+              <p className="text-red-600 mb-4">{error}</p>
+              <Button onClick={() => router.back()}>Go Back</Button>
+            </CardContent>
+          </Card>
+        </div>
+      );
+    }
+
+    const latestData = priceData[0];
+    if (!latestData) {
+      return (
+        <div className="flex flex-1 flex-col gap-6 p-6">
+          <div className="flex items-center space-x-4 mb-6">
+            <Button variant="outline" size="sm" onClick={() => router.back()}>
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back
+            </Button>
+          </div>
+          <Card>
+            <CardContent className="p-6 text-center">
+              <p className="text-gray-500">
+                No data available for {decodedSymbol}
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+      );
+    }
+
+    const signalType = getSignalType(
+      latestData.sentiment,
+      latestData.technicalIndicators.rsi,
+      latestData.rsi_signal
+    );
+    const signalText = getSignalText(signalType);
+    const priceChange = latestData.sentiment * 100;
+
+    return (
+      <div className="flex flex-1 flex-col gap-6 p-6">
+        <div className="flex items-center space-x-4 mb-6">
+          <Button variant="outline" size="sm" onClick={() => router.back()}>
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back
+          </Button>
+          <h1 className="text-2xl font-bold">{decodedSymbol}</h1>
+          <Badge
+            className={
+              signalType === "buy"
+                ? "bg-green-100 text-green-800"
+                : signalType === "sell"
+                ? "bg-red-100 text-red-800"
+                : "bg-yellow-100 text-yellow-800"
+            }
+          >
+            {signalText}
+          </Badge>
+        </div>
+
+        <div className="grid gap-6">
+          {/* Price Overview */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Price Overview</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-3xl font-bold">
+                    {formatPrice(latestData.price)}
+                  </p>
+                  <div className="flex items-center mt-2">
+                    {priceChange > 0 ? (
+                      <TrendingUp className="h-4 w-4 text-green-500 mr-1" />
+                    ) : (
+                      <TrendingDown className="h-4 w-4 text-red-500 mr-1" />
+                    )}
+                    <span
+                      className={
+                        priceChange > 0 ? "text-green-500" : "text-red-500"
+                      }
+                    >
+                      {Math.abs(priceChange).toFixed(2)}%
+                    </span>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <p className="text-sm text-gray-500">Last Updated</p>
+                  <p className="font-medium">
+                    {formatTimestamp(latestData.timestamp)}
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Chart */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Price Chart</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <CandlestickChart data={chartData} />
+            </CardContent>
+          </Card>
+
+          {/* Technical Indicators */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Technical Indicators</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="space-y-2">
+                  <p className="text-sm text-gray-500 flex items-center">
+                    <Target className="h-4 w-4 mr-2" />
+                    RSI
+                  </p>
+                  <p className="text-xl font-bold">
+                    {latestData.technicalIndicators.rsi.toFixed(1)}
+                  </p>
+                </div>
+                <div className="space-y-2">
+                  <p className="text-sm text-gray-500">Sentiment</p>
+                  <p
+                    className={`text-xl font-bold ${
+                      latestData.sentiment > 0
+                        ? "text-green-600"
+                        : latestData.sentiment < 0
+                        ? "text-red-600"
+                        : "text-gray-600"
+                    }`}
+                  >
+                    {(latestData.sentiment * 100).toFixed(1)}%
+                  </p>
+                </div>
+                <div className="space-y-2">
+                  <p className="text-sm text-gray-500">Fear/Greed</p>
+                  <p className="text-xl font-bold">
+                    {latestData.fearGreedIndex}
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    {getFearGreedText(latestData.fearGreedIndex)}
+                  </p>
+                </div>
+                <div className="space-y-2">
+                  <p className="text-sm text-gray-500 flex items-center">
+                    <Clock className="h-4 w-4 mr-2" />
+                    Confidence
+                  </p>
+                  <p className="text-xl font-bold">
+                    {Math.round(latestData.metadata.confidence * 100)}%
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Recent Data */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Recent Price Data</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2 max-h-64 overflow-y-auto">
+                {priceData.slice(0, 10).map((data) => (
+                  <div
+                    key={data._id}
+                    className="flex items-center justify-between p-2 bg-gray-50 rounded"
+                  >
+                    <div>
+                      <p className="font-medium">{formatPrice(data.price)}</p>
+                      <p className="text-sm text-gray-500">
+                        {formatTimestamp(data.timestamp)}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm">
+                        RSI: {data.technicalIndicators.rsi.toFixed(1)}
+                      </p>
+                      <p className="text-sm text-gray-500">
+                        Sentiment: {(data.sentiment * 100).toFixed(1)}%
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  };
+
+  return (
+    <SidebarProvider>
+      <AppSidebar />
+      <SidebarInset>
+        <DashboardHeader />
+        {renderContent()}
+      </SidebarInset>
+    </SidebarProvider>
+  );
+}
