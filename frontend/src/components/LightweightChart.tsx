@@ -24,7 +24,7 @@ interface Props {
 
 const LightweightChart: React.FC<Props> = ({
   data,
-  height = 400,
+  height = 200,
   symbol = "Asset",
 }) => {
   const chartContainerRef = useRef<HTMLDivElement>(null);

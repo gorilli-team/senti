@@ -221,7 +221,28 @@ export default function ChartPage({
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back
           </Button>
-          <h1 className="text-2xl font-bold">{decodedSymbol}</h1>
+          <div className="flex items-center space-x-4">
+            <h1 className="text-2xl font-bold">{decodedSymbol}</h1>
+            <div className="flex items-center space-x-2">
+              <p className="text-2xl font-bold text-gray-900">
+                {formatPrice(latestData.price)}
+              </p>
+              <div className="flex items-center">
+                {priceChange > 0 ? (
+                  <TrendingUp className="h-4 w-4 text-green-500 mr-1" />
+                ) : (
+                  <TrendingDown className="h-4 w-4 text-red-500 mr-1" />
+                )}
+                <span
+                  className={
+                    priceChange > 0 ? "text-green-500" : "text-red-500"
+                  }
+                >
+                  {Math.abs(priceChange).toFixed(2)}%
+                </span>
+              </div>
+            </div>
+          </div>
           <Badge
             className={
               signalType === "buy"
@@ -236,51 +257,8 @@ export default function ChartPage({
         </div>
 
         <div className="grid gap-6">
-          {/* Price Overview */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Price Overview</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-3xl font-bold">
-                    {formatPrice(latestData.price)}
-                  </p>
-                  <div className="flex items-center mt-2">
-                    {priceChange > 0 ? (
-                      <TrendingUp className="h-4 w-4 text-green-500 mr-1" />
-                    ) : (
-                      <TrendingDown className="h-4 w-4 text-red-500 mr-1" />
-                    )}
-                    <span
-                      className={
-                        priceChange > 0 ? "text-green-500" : "text-red-500"
-                      }
-                    >
-                      {Math.abs(priceChange).toFixed(2)}%
-                    </span>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <p className="text-sm text-gray-500">Last Updated</p>
-                  <p className="font-medium">
-                    {formatTimestamp(latestData.timestamp)}
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
           {/* Chart */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Price Chart</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <LightweightChart data={chartData} height={400} />
-            </CardContent>
-          </Card>
+          <LightweightChart data={chartData} height={200} />
 
           {/* Technical Indicators */}
           <Card>
