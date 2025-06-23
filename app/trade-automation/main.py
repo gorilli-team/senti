@@ -38,12 +38,16 @@ signals = db["rsi_signals"]
 trades = db["executed_trades"]
 
 TRADE_AMOUNT_USDT = 100
-TRADE_AMOUNT_TOKEN = 1
+TRADE_AMOUNT_TOKENS = {
+    "BTC/USDT": 0.001,
+    "ETH/USDT": 0.05,
+    "SOL/USDT": 1
+}
 
 def normalize_price(price):
     return float(price) / 1e18
 
-def trade(signal, action: str):
+def trade(signal, action: str, nonce):
     pair = signal["pair"]
     timestamp = signal["timestamp"]
     raw_price = signal["price"]
@@ -53,7 +57,6 @@ def trade(signal, action: str):
     contract = POOL_CONTRACTS[pair]
 
     try:
-        nonce = w3.eth.get_transaction_count(WALLET_ADDRESS)
         gas_price = w3.eth.gas_price
 
         if action == "BUY":
@@ -68,7 +71,7 @@ def trade(signal, action: str):
             })
 
         elif action == "SELL":
-            amount_token = Web3.to_wei(TRADE_AMOUNT_TOKEN, "ether")
+            amount_token = Web3.to_wei(TRADE_AMOUNT_TOKENS[pair], "ether")
             tx = contract.functions.tokenAtoTokenB(
                 amount_token
             ).build_transaction({
@@ -80,7 +83,7 @@ def trade(signal, action: str):
 
         else:
             print(f"Invalid action: {action}")
-            return
+            return nonce
 
         signed_tx = w3.eth.account.sign_transaction(tx, private_key=PRIVATE_KEY)
         tx_hash = w3.eth.send_raw_transaction(signed_tx.raw_transaction)
@@ -90,13 +93,15 @@ def trade(signal, action: str):
             "pair": pair,
             "action": action,
             "amount_usd": TRADE_AMOUNT_USDT if action == "BUY" else None,
-            "amount_token": TRADE_AMOUNT_TOKEN if action == "SELL" else None,
+            "amount_token": TRADE_AMOUNT_TOKENS[pair] if action == "SELL" else None,
             "price": price,
             "timestamp": timestamp,
             "rsi": rsi,
             "tx_hash": tx_hash.hex()
         }
         trades.insert_one(trade_doc)
+
+        return nonce + 1
 
     except ContractLogicError as e:
         print(f"Contract error during {action} on {pair}: {str(e)}")
@@ -105,15 +110,16 @@ def trade(signal, action: str):
 
 def check_and_trade():
     pairs = ["BTC/USDT", "ETH/USDT", "SOL/USDT"]
+    nonce = w3.eth.get_transaction_count(WALLET_ADDRESS, "pending")
     for pair in pairs:
         last_signal = signals.find({"pair": pair}).sort("timestamp", -1).limit(1)
         for signal in last_signal:
             signal_value = signal["rsi_signal"]
 
             if signal_value == 1:
-                trade(signal, "BUY")
+                nonce = trade(signal, "BUY", nonce)
             elif signal_value == 2:
-                trade(signal, "SELL")
+                nonce = trade(signal, "SELL", nonce)
             elif signal_value == 0:
                 print(f'{signal["timestamp"]}: HOLD for {pair}')
             else:
