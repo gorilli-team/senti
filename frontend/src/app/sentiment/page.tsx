@@ -7,15 +7,12 @@ import { API_ENDPOINTS, fetchAPI } from "@/lib/api";
 import { AppSidebar } from "@/components/app-sidebar";
 import { DashboardHeader } from "@/components/dashboard-header";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import Image from "next/image";
 
 interface SentimentDataPoint {
   timestamp: string;
   value: number;
   value_classification: string;
-}
-
-interface HistoricalSentimentData {
-  data: SentimentDataPoint[];
 }
 
 export default function SentimentPage() {
@@ -174,7 +171,17 @@ export default function SentimentPage() {
       <SidebarInset>
         <DashboardHeader />
         <div className="flex flex-1 flex-col gap-6 p-6">
-          <h1 className="text-3xl font-bold">Market Sentiment Analysis</h1>
+          <div className="flex items-center justify-between">
+            <h1 className="text-3xl font-bold">Market Sentiment Analysis</h1>
+            <div className="flex items-center gap-2 text-sm text-muted-foreground bg-blue-50 px-3 py-1 rounded-full border border-blue-200">
+              <img
+                src="/coinmarketcap.png"
+                alt="CoinMarketCap Logo"
+                className="w-5 h-5 mr-1"
+              />
+              Data from CoinMarketCap APIs
+            </div>
+          </div>
 
           {/* Current Sentiment */}
           {latestData && (
@@ -337,8 +344,9 @@ export default function SentimentPage() {
                       <div className="flex items-start space-x-2">
                         <span className="text-blue-600 font-semibold">•</span>
                         <span>
-                          <strong>Contrarian Strategy:</strong> "Be fearful when
-                          others are greedy and greedy when others are fearful."
+                          <strong>Contrarian Strategy:</strong> &ldquo;Be
+                          fearful when others are greedy and greedy when others
+                          are fearful.&rdquo;
                         </span>
                       </div>
                       <div className="flex items-start space-x-2">
@@ -353,7 +361,7 @@ export default function SentimentPage() {
 
                   <div>
                     <h3 className="font-semibold text-base mb-1">
-                      How It's Calculated
+                      How It&apos;s Calculated
                     </h3>
                     <p className="text-muted-foreground text-sm mb-2">
                       The index uses five components:

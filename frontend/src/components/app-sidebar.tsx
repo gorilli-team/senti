@@ -3,7 +3,7 @@
 import type React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { FileText, TrendingUp, CreditCard, Brain } from "lucide-react";
+import { FileText, TrendingUp, Brain } from "lucide-react";
 
 import {
   Sidebar,
