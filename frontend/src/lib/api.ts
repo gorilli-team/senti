@@ -5,6 +5,7 @@ export const API_ENDPOINTS = {
   data: `${API_BASE_URL}/api/data`,
   priceFeeds: `${API_BASE_URL}/api/price-feeds`,
   rsiSignals: `${API_BASE_URL}/api/rsi-signals`,
+  fearGreed: `${API_BASE_URL}/api/fear-greed`,
   health: `${API_BASE_URL}/health`,
 };
 
