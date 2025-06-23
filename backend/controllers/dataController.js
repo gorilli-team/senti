@@ -5,25 +5,44 @@ class DataController {
   // GET all data with pagination - combines price feeds and RSI signals
   static async getAllData(req, res) {
     try {
+      console.log(" &&&&& getAllData");
+
       const page = parseInt(req.query.page) || 1;
       const limit = parseInt(req.query.limit) || 50;
       const skip = (page - 1) * limit;
 
+      console.log("req.query", req.query);
+      const symbol = req.query.symbol;
+
+      console.log("symbol", symbol);
+
       const db = mongoose.connection.db;
+
+      // Build query for price feeds
+      let priceFeedsQuery = {};
+      if (symbol) {
+        priceFeedsQuery.pair = symbol;
+      }
 
       // Get price feeds
       const priceFeeds = await db
         .collection("price_feeds")
-        .find({})
+        .find(priceFeedsQuery)
         .sort({ timestamp: -1 })
         .skip(skip)
         .limit(limit)
         .toArray();
 
+      // Build query for RSI signals
+      let rsiSignalsQuery = {};
+      if (symbol) {
+        rsiSignalsQuery.pair = symbol;
+      }
+
       // Get RSI signals for the same time period
       const rsiSignals = await db
         .collection("rsi_signals")
-        .find({})
+        .find(rsiSignalsQuery)
         .sort({ timestamp: -1 })
         .toArray();
 
@@ -101,7 +120,9 @@ class DataController {
       });
 
       // Get total count for pagination
-      const total = await db.collection("price_feeds").countDocuments();
+      const total = await db
+        .collection("price_feeds")
+        .countDocuments(priceFeedsQuery);
       const totalPages = Math.ceil(total / limit);
 
       res.json({
@@ -138,6 +159,8 @@ class DataController {
     try {
       const { symbol } = req.params;
       const limit = parseInt(req.query.limit) || 100;
+
+      console.log("symbol", symbol);
 
       const db = mongoose.connection.db;
 
