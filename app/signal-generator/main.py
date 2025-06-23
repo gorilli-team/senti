@@ -1,5 +1,5 @@
 import time
-from utils import process_pair
+from utils.utils import process_pair
 
 pairs = ["BTC/USDT", "ETH/USDT", "SOL/USDT"]
 for pair in pairs:
