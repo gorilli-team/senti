@@ -39,8 +39,6 @@ const LightweightChart: React.FC<Props> = ({
     if (!isClient || !chartContainerRef.current || !data || data.length === 0)
       return;
 
-    let chart: IChartApi | null = null;
-
     try {
       // Clean up any previous chart
       if (chartRef.current) {
@@ -77,11 +75,10 @@ const LightweightChart: React.FC<Props> = ({
       };
 
       // Create chart
-      chart = createChart(chartContainerRef.current, chartOptions);
-      chartRef.current = chart;
+      chartRef.current = createChart(chartContainerRef.current, chartOptions);
 
       // Add line series
-      const lineSeries = chart.addSeries(LineSeries, {
+      const lineSeries = chartRef.current.addSeries(LineSeries, {
         color: "#2962FF",
         lineWidth: 2,
         priceFormat: {

@@ -117,10 +117,15 @@ export default function ChartPage({
         setLoading(true);
         setError(null);
 
+        console.log("Fetching data for symbol:", decodedSymbol);
+
         // Fetch price data for the specific symbol
         const data = await fetchAPI(
           `${API_ENDPOINTS.data}?symbol=${decodedSymbol}&limit=100`
         );
+
+        console.log("API response:", data);
+
         setPriceData(data.data || []);
 
         // Convert price data to chart format
@@ -132,10 +137,11 @@ export default function ChartPage({
             };
           }) || [];
 
+        console.log("Chart data points:", chartDataPoints);
         setChartData(chartDataPoints);
       } catch (err) {
-        setError(err instanceof Error ? err.message : "An error occurred");
         console.error("Error fetching price data:", err);
+        setError(err instanceof Error ? err.message : "An error occurred");
       } finally {
         setLoading(false);
       }
