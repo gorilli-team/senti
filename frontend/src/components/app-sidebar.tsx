@@ -8,7 +8,6 @@ import { FileText, TrendingUp, Brain } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
-  SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
