@@ -106,6 +106,7 @@ export default function ChartPage({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [chartData, setChartData] = useState<ChartData[]>([]);
+  const [rsiSignal, setRsiSignal] = useState<number | null>(null);
 
   // Unwrap the params Promise
   const { symbol } = use(params);
@@ -147,7 +148,24 @@ export default function ChartPage({
       }
     };
 
+    // Fetch RSI signal for the symbol
+    const fetchRsiSignal = async () => {
+      try {
+        const rsiData = await fetchAPI(
+          `${API_ENDPOINTS.rsiSignals}?symbol=${decodedSymbol}&limit=1`
+        );
+        if (rsiData && rsiData.data && rsiData.data.length > 0) {
+          setRsiSignal(rsiData.data[0].rsi);
+        } else {
+          setRsiSignal(null);
+        }
+      } catch {
+        setRsiSignal(null);
+      }
+    };
+
     fetchPriceData();
+    fetchRsiSignal();
   }, [decodedSymbol]);
 
   const renderContent = () => {
@@ -233,6 +251,20 @@ export default function ChartPage({
       }
     }
 
+    // Calculate dynamic sentiment as 24h price change
+    let dynamicSentiment = 0;
+    if (priceData.length > 1) {
+      const now = Date.now();
+      const last24h = priceData.filter(
+        (d) => new Date(d.timestamp).getTime() >= now - 24 * 60 * 60 * 1000
+      );
+      if (last24h.length > 1) {
+        const oldest = last24h[last24h.length - 1].price;
+        const latest = last24h[0].price;
+        dynamicSentiment = ((latest - oldest) / oldest) * 100;
+      }
+    }
+
     return (
       <div className="flex flex-1 flex-col gap-6 p-6">
         <div className="flex items-center space-x-4 mb-6">
@@ -306,21 +338,21 @@ export default function ChartPage({
                     RSI
                   </p>
                   <p className="text-xl font-bold">
-                    {latestData.technicalIndicators.rsi.toFixed(1)}
+                    {rsiSignal !== null ? rsiSignal.toFixed(1) : "-"}
                   </p>
                 </div>
                 <div className="space-y-2">
                   <p className="text-sm text-gray-500">Sentiment</p>
                   <p
                     className={`text-xl font-bold ${
-                      latestData.sentiment > 0
+                      dynamicSentiment > 0
                         ? "text-green-600"
-                        : latestData.sentiment < 0
+                        : dynamicSentiment < 0
                         ? "text-red-600"
                         : "text-gray-600"
                     }`}
                   >
-                    {(latestData.sentiment * 100).toFixed(1)}%
+                    {dynamicSentiment.toFixed(1)}%
                   </p>
                 </div>
                 <div className="space-y-2">
