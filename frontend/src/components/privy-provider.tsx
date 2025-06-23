@@ -50,28 +50,14 @@ export function PrivyAppProvider({ children }: PrivyAppProviderProps) {
         },
         supportedChains: [
           {
-            id: 1,
-            name: "Ethereum",
-            nativeCurrency: { name: "Ether", symbol: "ETH", decimals: 18 },
-            rpcUrls: { default: { http: ["https://eth.llamarpc.com"] } },
-          },
-          {
-            id: 137,
-            name: "Polygon",
-            nativeCurrency: { name: "MATIC", symbol: "MATIC", decimals: 18 },
-            rpcUrls: { default: { http: ["https://polygon-rpc.com"] } },
-          },
-          {
-            id: 10,
-            name: "Optimism",
-            nativeCurrency: { name: "Ether", symbol: "ETH", decimals: 18 },
-            rpcUrls: { default: { http: ["https://mainnet.optimism.io"] } },
-          },
-          {
-            id: 42161,
-            name: "Arbitrum",
-            nativeCurrency: { name: "Ether", symbol: "ETH", decimals: 18 },
-            rpcUrls: { default: { http: ["https://arb1.arbitrum.io/rpc"] } },
+            id: 97,
+            name: "BSC Testnet",
+            nativeCurrency: { name: "tBNB", symbol: "tBNB", decimals: 18 },
+            rpcUrls: {
+              default: {
+                http: ["https://data-seed-prebsc-1-s1.binance.org:8545"],
+              },
+            },
           },
         ],
       }}
