@@ -1,18 +1,29 @@
 require("dotenv").config();
 const PullServiceClient = require("./pullServiceClient");
 const { Web3 } = require("web3");
-const { MongoClient } = require("mongodb")
-const { getSymbolFromId } = require("./utils/utils.js")
+const { MongoClient } = require("mongodb");
+const { getSymbolFromId } = require("./utils/utils.js");
 
-const mongoClient = new MongoClient(process.env.MONGODB_CONNECTION_STRING);
+// Configure MongoDB connection with SSL for Atlas
+let connectionString = process.env.MONGODB_CONNECTION_STRING;
+if (connectionString && connectionString.includes("mongodb.net")) {
+  // For MongoDB Atlas, ensure SSL is enabled
+  if (!connectionString.includes("?")) {
+    connectionString += "?ssl=true&tlsAllowInvalidCertificates=true";
+  } else if (!connectionString.includes("ssl=true")) {
+    connectionString += "&ssl=true&tlsAllowInvalidCertificates=true";
+  }
+}
+
+const mongoClient = new MongoClient(connectionString);
 let mongoDb;
 
 async function initMongo() {
   if (!mongoDb) {
     await mongoClient.connect();
-    mongoDb = mongoClient.db("oracle")
+    mongoDb = mongoClient.db("oracle");
   }
-  return mongoDb.collection("price_feeds")
+  return mongoDb.collection("price_feeds");
 }
 
 async function main() {
@@ -94,7 +105,7 @@ async function main() {
         price: pairPrice[i],
         decimals: parseInt(pairDecimal[i]),
         timestamp: new Date(parseInt(pairTimestamp[i])),
-      }
+      };
 
       await collection.insertOne(doc);
     }

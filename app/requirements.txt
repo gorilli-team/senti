@@ -3,4 +3,4 @@ pandas
 pymongo
 python-dotenv
 certifi
-urllib3
+urllib3 

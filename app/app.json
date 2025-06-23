@@ -1,0 +1,47 @@
+{
+  "name": "senti-app",
+  "description": "Senti Oracle and Signal Generator Application",
+  "repository": "https://github.com/yourusername/senti-app",
+  "logo": "https://node-js-sample.herokuapp.com/node.png",
+  "keywords": ["node", "python", "oracle", "trading", "signals"],
+  "env": {
+    "MONGODB_CONNECTION_STRING": {
+      "description": "MongoDB connection string",
+      "required": true
+    },
+    "GRPC_SERVER_ADDRESS_MAINNET": {
+      "description": "gRPC server address for mainnet",
+      "required": true
+    },
+    "BNB_MAINNET_RPC_URL": {
+      "description": "BNB Chain mainnet RPC URL",
+      "required": true
+    },
+    "PULL_CONTRACT_ADDRESS_BNB": {
+      "description": "Pull contract address on BNB Chain",
+      "required": true
+    },
+    "WALLET_ADDRESS": {
+      "description": "Wallet address for transactions",
+      "required": true
+    },
+    "PRIVATE_KEY": {
+      "description": "Private key for signing transactions",
+      "required": true
+    }
+  },
+  "addons": [
+    {
+      "plan": "mongolab:sandbox",
+      "as": "MONGODB"
+    }
+  ],
+  "buildpacks": [
+    {
+      "url": "heroku/nodejs"
+    },
+    {
+      "url": "heroku/python"
+    }
+  ]
+}
