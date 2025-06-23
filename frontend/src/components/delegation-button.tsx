@@ -10,7 +10,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { ArrowUpDown } from "lucide-react";
-import { DelegationActions } from "./delegation-actions";
+// import { DelegationActions } from "./delegation-actions";
 
 export function DelegationButton() {
   const { authenticated, ready } = usePrivy();
@@ -31,9 +31,7 @@ export function DelegationButton() {
         <DialogHeader>
           <DialogTitle>Delegation Manager</DialogTitle>
         </DialogHeader>
-        <div className="mt-4">
-          <DelegationActions />
-        </div>
+        <div className="mt-4">{/* <DelegationActions /> */}</div>
       </DialogContent>
     </Dialog>
   );
