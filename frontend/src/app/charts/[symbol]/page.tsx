@@ -258,7 +258,21 @@ export default function ChartPage({
 
         <div className="grid gap-6">
           {/* Chart */}
-          <LightweightChart data={chartData} height={200} />
+          <Card>
+            <CardContent className="p-4">
+              {chartData && chartData.length > 0 ? (
+                <LightweightChart
+                  data={chartData}
+                  height={200}
+                  symbol={decodedSymbol}
+                />
+              ) : (
+                <div className="h-[200px] flex items-center justify-center text-gray-500">
+                  Loading chart data...
+                </div>
+              )}
+            </CardContent>
+          </Card>
 
           {/* Technical Indicators */}
           <Card>

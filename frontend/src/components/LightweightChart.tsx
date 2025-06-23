@@ -39,6 +39,8 @@ const LightweightChart: React.FC<Props> = ({
     if (!isClient || !chartContainerRef.current || !data || data.length === 0)
       return;
 
+    let chart: IChartApi | null = null;
+
     try {
       // Clean up any previous chart
       if (chartRef.current) {
@@ -75,7 +77,7 @@ const LightweightChart: React.FC<Props> = ({
       };
 
       // Create chart
-      const chart = createChart(chartContainerRef.current, chartOptions);
+      chart = createChart(chartContainerRef.current, chartOptions);
       chartRef.current = chart;
 
       // Add line series
@@ -121,7 +123,7 @@ const LightweightChart: React.FC<Props> = ({
 
       // Fit all data points into the visible area
       setTimeout(() => {
-        chart.timeScale().fitContent();
+        chartRef.current?.timeScale().fitContent();
       }, 50);
 
       // Add custom tooltip
@@ -146,7 +148,7 @@ const LightweightChart: React.FC<Props> = ({
         container.appendChild(toolTip);
 
         // Update tooltip
-        chart.subscribeCrosshairMove((param) => {
+        chartRef.current?.subscribeCrosshairMove((param) => {
           if (
             !param.point ||
             !param.time ||
@@ -226,8 +228,8 @@ const LightweightChart: React.FC<Props> = ({
 
       // Handle resize
       const handleResize = () => {
-        if (chartContainerRef.current && chart) {
-          chart.applyOptions({
+        if (chartContainerRef.current && chartRef.current) {
+          chartRef.current.applyOptions({
             width: chartContainerRef.current.clientWidth,
           });
         }
@@ -238,12 +240,18 @@ const LightweightChart: React.FC<Props> = ({
       // Cleanup
       return () => {
         window.removeEventListener("resize", handleResize);
-        if (chart) {
-          chart.remove();
+        if (chartRef.current) {
+          chartRef.current.remove();
+          chartRef.current = null;
         }
       };
     } catch (error) {
       console.error("Error initializing chart:", error);
+      // Clean up on error
+      if (chartRef.current) {
+        chartRef.current.remove();
+        chartRef.current = null;
+      }
     }
   }, [data, height, isClient]);
 
@@ -289,7 +297,7 @@ const LightweightChart: React.FC<Props> = ({
   }
 
   return (
-    <div className="w-full p-4 bg-white rounded-lg shadow-md">
+    <div className="w-full">
       <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-4">
         <h3 className="text-lg font-semibold mb-2 md:mb-0">
           {symbol} Price Chart
