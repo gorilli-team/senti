@@ -27,7 +27,7 @@ async function initMongo() {
 }
 
 async function main() {
-  const address = process.env.GRPC_SERVER_ADDRESS_MAINNET;
+  const address = process.env.GRPC_SERVER_ADDRESS_TESTNET;
   const pairIndexes = [0, 1, 10]; // BTC/USDT, ETH/USDT, SOL/USDT
   const chainType = "evm";
 
@@ -50,7 +50,7 @@ async function main() {
 
   async function callContract(response) {
     const web3 = new Web3(
-      new Web3.providers.HttpProvider(process.env.BNB_MAINNET_RPC_URL)
+      new Web3.providers.HttpProvider(process.env.BNB_TESTNET_RPC_URL)
     );
     const contractAbi = require("./resources/abi.json");
     const contractAddress = process.env.PULL_CONTRACT_ADDRESS_BNB;
