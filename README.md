@@ -26,7 +26,6 @@
 # Table of contents
 
 <!-- TOC -->
-[Table of contents](#table-of-contents)
   - [1. Overview](#1-overview)
   - [2. Target audience](#2-target-audience)
   - [3. Submission details](#3-submission-details)
