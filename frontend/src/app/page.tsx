@@ -4,6 +4,7 @@ import { MarketSignals } from "@/components/market-signals";
 import { LiveFeed } from "@/components/live-feed";
 import { FearGreedIndicators } from "@/components/fear-greed-indicators";
 import { SentimentChart } from "@/components/sentiment-chart";
+import { Prices } from "@/components/prices";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 
 export default function DashboardPage() {
@@ -21,6 +22,11 @@ export default function DashboardPage() {
             <div className="lg:col-span-1">
               <SentimentChart />
             </div>
+          </div>
+
+          {/* Live Prices */}
+          <div className="grid grid-cols-1 gap-6">
+            <Prices />
           </div>
 
           {/* Market Signals and Live Feed */}
