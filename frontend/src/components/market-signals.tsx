@@ -10,7 +10,7 @@ import {
   Target,
   RefreshCw,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { fetchAPI, API_ENDPOINTS } from "@/lib/api";
 
@@ -122,6 +122,43 @@ export function MarketSignals() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [mounted, setMounted] = useState(false);
+  const [priceChanges24h, setPriceChanges24h] = useState<
+    Record<string, number>
+  >({});
+
+  const fetch24hPriceChange = useCallback(async (symbol: string) => {
+    try {
+      const now = Date.now();
+      const data = await fetchAPI(
+        `${API_ENDPOINTS.data}?symbol=${encodeURIComponent(symbol)}&limit=1000`
+      );
+      console.log("Fetched data for", symbol, data.data);
+      const prices = (data.data || []).filter((d: MarketSignal) => {
+        const t = new Date(d.timestamp).getTime();
+        const in24h = t >= now - 24 * 60 * 60 * 1000;
+        if (!in24h) {
+          console.log(
+            "Filtered out (not in 24h):",
+            d.timestamp,
+            t,
+            now - 24 * 60 * 60 * 1000
+          );
+        }
+        return in24h;
+      });
+      console.log("Prices in last 24h for", symbol, prices);
+      if (prices.length > 1) {
+        const oldest = prices[prices.length - 1].price;
+        const latest = prices[0].price;
+        console.log("Oldest:", oldest, "Latest:", latest);
+        return ((latest - oldest) / oldest) * 100;
+      }
+      return 0;
+    } catch (e) {
+      console.error("Error fetching 24h price change for", symbol, e);
+      return 0;
+    }
+  }, []);
 
   const fetchSignals = async () => {
     try {
@@ -130,6 +167,7 @@ export function MarketSignals() {
 
       const data = await fetchAPI(`${API_ENDPOINTS.data}?limit=10`);
       setSignals(data.data || []);
+      setPriceChanges24h(data.priceChanges24h || {});
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred");
       console.error("Error fetching market signals:", err);
@@ -151,6 +189,19 @@ export function MarketSignals() {
     const interval = setInterval(fetchSignals, 30000);
     return () => clearInterval(interval);
   }, []);
+
+  useEffect(() => {
+    if (signals.length === 0) return;
+    (async () => {
+      const changes: Record<string, number> = {};
+      await Promise.all(
+        signals.map(async (signal) => {
+          changes[signal.symbol] = await fetch24hPriceChange(signal.symbol);
+        })
+      );
+      setPriceChanges24h(changes);
+    })();
+  }, [signals, fetch24hPriceChange]);
 
   // Don't render anything until component is mounted to prevent hydration issues
   if (!mounted) {
@@ -275,7 +326,7 @@ export function MarketSignals() {
             );
             const signalText = getSignalText(signalType);
             const confidence = Math.round(signal.metadata.confidence * 100);
-            const priceChange = signal.sentiment * 100; // Simulate price change based on sentiment
+            const priceChange = priceChanges24h[signal.symbol] ?? 0;
 
             return (
               <Card
