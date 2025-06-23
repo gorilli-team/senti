@@ -7,7 +7,7 @@ const rateLimit = require("express-rate-limit");
 require("dotenv").config();
 
 const app = express();
-const PORT = process.env.PORT || 5001;
+const PORT = process.env.PORT || 3002;
 
 // Middleware
 app.use(helmet());
@@ -31,14 +31,18 @@ mongoose
     useNewUrlParser: true,
     useUnifiedTopology: true,
   })
-  .then(() => console.log("Connected to MongoDB"))
+  .then(() => console.log("Connected to MongoDB", MONGODB_URI))
   .catch((err) => console.error("MongoDB connection error:", err));
 
 // Import routes
 const dataRoutes = require("./routes/data");
+const priceFeedsRoutes = require("./routes/priceFeeds");
+const rsiSignalsRoutes = require("./routes/rsiSignals");
 
 // Routes
 app.use("/api/data", dataRoutes);
+app.use("/api/price-feeds", priceFeedsRoutes);
+app.use("/api/rsi-signals", rsiSignalsRoutes);
 
 // Health check endpoint
 app.get("/health", (req, res) => {
@@ -57,6 +61,8 @@ app.get("/", (req, res) => {
     endpoints: {
       health: "/health",
       data: "/api/data",
+      priceFeeds: "/api/price-feeds",
+      rsiSignals: "/api/rsi-signals",
     },
   });
 });
