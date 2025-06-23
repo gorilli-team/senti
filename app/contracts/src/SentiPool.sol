@@ -6,7 +6,7 @@ import { ERC20 } from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import { Math } from "@openzeppelin/contracts/utils/math/Math.sol";
 
-contract PoolFactory is Ownable, ERC20 {
+contract SentiPool is Ownable, ERC20 {
     IERC20 public immutable i_tokenA;
     IERC20 public immutable i_tokenB;
 
@@ -24,8 +24,8 @@ contract PoolFactory is Ownable, ERC20 {
     event AddLiquidity(address indexed liquidityProvider, uint256 indexed amountTokenA, uint256 indexed amountTokenB);
     event RemoveLiquidity(address indexed liquidityProvider, uint256 indexed amountLPTokensBurned, uint256 indexed amountTokenA, uint256 amountTokenB);
 
-    error PoolFactory__AlreadyInitialized();
-    error PoolFactory__AmountMustBeGreaterThanZero();
+    error SentiPool__AlreadyInitialized();
+    error SentiPool__AmountMustBeGreaterThanZero();
 
     constructor(address _tokenA, address _tokenB, string memory lpTokenName, string memory lpTokenSymbol) Ownable(msg.sender)  ERC20(lpTokenName, lpTokenSymbol) {
         i_tokenA = IERC20(_tokenA);
@@ -34,11 +34,11 @@ contract PoolFactory is Ownable, ERC20 {
 
         function init(uint256 amountTokenA, uint256 amountTokenB) external onlyOwner {
         if (amountTokenA == 0 || amountTokenB == 0) {
-            revert PoolFactory__AmountMustBeGreaterThanZero();
+            revert SentiPool__AmountMustBeGreaterThanZero();
         }
 
         if (s_totalLiquidityTokenA != 0 && s_totalLiquidityTokenB != 0) {
-            revert PoolFactory__AlreadyInitialized();
+            revert SentiPool__AlreadyInitialized();
         }
 
         s_totalLiquidityTokenA = amountTokenA;
@@ -56,7 +56,7 @@ contract PoolFactory is Ownable, ERC20 {
 
     function tokenAtoTokenB(uint256 amountTokenA) external returns(uint256 outputTokenB) {
         if (amountTokenA == 0) {
-            revert PoolFactory__AmountMustBeGreaterThanZero();
+            revert SentiPool__AmountMustBeGreaterThanZero();
         }
         uint256 reservesTokenA = s_totalLiquidityTokenA;
         uint256 reservesTokenB = s_totalLiquidityTokenB;
@@ -74,7 +74,7 @@ contract PoolFactory is Ownable, ERC20 {
 
     function tokenBtoTokenA(uint256 amountTokenB) external returns(uint256 outputTokenA) {
         if (amountTokenB == 0) {
-            revert PoolFactory__AmountMustBeGreaterThanZero();
+            revert SentiPool__AmountMustBeGreaterThanZero();
         }
         uint256 reservesTokenA = s_totalLiquidityTokenA;
         uint256 reservesTokenB = s_totalLiquidityTokenB;
@@ -92,7 +92,7 @@ contract PoolFactory is Ownable, ERC20 {
 
     function addLiquidityTokenA(uint256 amountTokenA) external returns(uint256 amountTokenB) {
         if (amountTokenA == 0) {
-            revert PoolFactory__AmountMustBeGreaterThanZero();
+            revert SentiPool__AmountMustBeGreaterThanZero();
         }
         uint256 reservesTokenA = s_totalLiquidityTokenA;
         uint256 reservesTokenB = s_totalLiquidityTokenB;
@@ -114,7 +114,7 @@ contract PoolFactory is Ownable, ERC20 {
 
     function addLiquidityTokenB(uint256 amountTokenB) external returns(uint256 amountTokenA) {
         if (amountTokenB == 0) {
-            revert PoolFactory__AmountMustBeGreaterThanZero();
+            revert SentiPool__AmountMustBeGreaterThanZero();
         }
         uint256 reservesTokenA = s_totalLiquidityTokenA;
         uint256 reservesTokenB = s_totalLiquidityTokenB;
@@ -136,7 +136,7 @@ contract PoolFactory is Ownable, ERC20 {
 
     function removeLiquidity(uint256 amountLPTokens) external {
         if (amountLPTokens == 0) {
-            revert PoolFactory__AmountMustBeGreaterThanZero();
+            revert SentiPool__AmountMustBeGreaterThanZero();
         }
         uint256 poolShare = _calculatePoolShare(amountLPTokens);
         uint256 amountTokenAToSend = (poolShare * s_totalLiquidityTokenA) / BASIS_POINTS;
