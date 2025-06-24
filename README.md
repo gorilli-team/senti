@@ -51,7 +51,7 @@ It also serves as a tool for information aggregation, providing an accurate pict
 <img src="./docs/img/homepage.png" alt="Homepage" width="600" height="300">
 <br>
 <br>
-<strong>3- All the latest market signals are displayed in the homepage. Price information and current users' trades are also included in this page.</strong>
+<strong>3- All the latest market signals are displayed in the homepage, together with price information and current users' trades.</strong>
 <img src="./docs/img/market-signals.png" alt="Market Signals" width="600" height="350">
 <br>
 <br>
