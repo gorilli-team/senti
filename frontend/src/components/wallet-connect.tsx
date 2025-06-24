@@ -38,6 +38,12 @@ export function WalletConnect() {
     ? `${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}`
     : "Connected";
 
+  // Get the correct network name for BSC Testnet
+  const getNetworkName = () => {
+    // Since we're configured for BSC Testnet (chain ID 97), show the correct name
+    return "BSC Testnet";
+  };
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -45,7 +51,7 @@ export function WalletConnect() {
           <Wallet className="h-4 w-4" />
           <span className="hidden sm:inline">{displayAddress}</span>
           <Badge variant="secondary" className="text-xs">
-            {user?.wallet?.chainType}
+            {getNetworkName()}
           </Badge>
         </Button>
       </DropdownMenuTrigger>
