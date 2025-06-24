@@ -30,64 +30,54 @@ interface TokenBalance {
 }
 
 export function DelegationActions() {
-  const { user, authenticated, ready } = usePrivy();
+  const { user, authenticated, ready, sendTransaction } = usePrivy();
   const [selectedToken, setSelectedToken] = useState<string>("BTC");
   const [amount, setAmount] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
   const [balances, setBalances] = useState<TokenBalance>({});
   const [delegatedBalances, setDelegatedBalances] = useState<TokenBalance>({});
 
-  // Get provider and signer from Privy
+  // Create a simple provider for read operations
   const getProvider = () => {
-    if (!user?.wallet) return null;
-    return new ethers.BrowserProvider(
-      user.wallet as unknown as ethers.Eip1193Provider
+    return new ethers.JsonRpcProvider(
+      "https://data-seed-prebsc-1-s1.binance.org:8545"
     );
   };
 
-  // Get contract instance
-  const getContract = async () => {
+  // Get contract instance for read operations
+  const getContract = () => {
     const provider = getProvider();
-    if (!provider) return null;
-    const signer = await provider.getSigner();
     return new ethers.Contract(
       DELEGATION_MANAGER_ADDRESS,
       DelegationManagerABI,
-      signer
+      provider
     );
   };
 
-  // Get token contract instance
-  const getTokenContract = async (tokenAddress: string) => {
+  // Get token contract instance for read operations
+  const getTokenContract = (tokenAddress: string) => {
     const provider = getProvider();
-    if (!provider) return null;
-    const signer = await provider.getSigner();
     const tokenABI = [
       "function balanceOf(address owner) view returns (uint256)",
       "function approve(address spender, uint256 amount) returns (bool)",
       "function allowance(address owner, address spender) view returns (uint256)",
       "function decimals() view returns (uint8)",
     ];
-    return new ethers.Contract(tokenAddress, tokenABI, signer);
+    return new ethers.Contract(tokenAddress, tokenABI, provider);
   };
 
   // Fetch balances
   const fetchBalances = async () => {
     if (!user?.wallet?.address) return;
 
-    const provider = getProvider();
-    if (!provider) return;
-
     const newBalances: TokenBalance = {};
     const newDelegatedBalances: TokenBalance = {};
 
     try {
-      const contract = await getContract();
-      if (!contract) return;
+      const contract = getContract();
 
       for (const [tokenName, tokenAddress] of Object.entries(TOKEN_ADDRESSES)) {
-        const tokenContract = await getTokenContract(tokenAddress);
-        if (!tokenContract) continue;
+        const tokenContract = getTokenContract(tokenAddress);
 
         // Get token balance
         const balance = await tokenContract.balanceOf(user.wallet.address);
@@ -118,29 +108,47 @@ export function DelegationActions() {
 
     setIsLoading(true);
     try {
-      const contract = await getContract();
-      const tokenContract = await getTokenContract(
-        TOKEN_ADDRESSES[selectedToken as keyof typeof TOKEN_ADDRESSES]
-      );
-
-      if (!contract || !tokenContract)
-        throw new Error("Failed to get contract");
-
       const amountWei = ethers.parseUnits(amount, 18);
+      const tokenAddress =
+        TOKEN_ADDRESSES[selectedToken as keyof typeof TOKEN_ADDRESSES];
 
       // First approve the delegation manager to spend tokens
-      const approveTx = await tokenContract.approve(
-        DELEGATION_MANAGER_ADDRESS,
-        amountWei
+      const tokenABI = [
+        "function approve(address spender, uint256 amount) returns (bool)",
+      ];
+      const tokenContract = new ethers.Contract(tokenAddress, tokenABI);
+
+      const approveData = tokenContract.interface.encodeFunctionData(
+        "approve",
+        [DELEGATION_MANAGER_ADDRESS, amountWei]
       );
-      await approveTx.wait();
+
+      const approveTx = await sendTransaction({
+        to: tokenAddress,
+        data: approveData,
+      });
+
+      // Wait for approval transaction
+      const provider = getProvider();
+      await provider.waitForTransaction(approveTx.hash);
 
       // Then deposit
-      const depositTx = await contract.depositToAllowedOperator(
-        TOKEN_ADDRESSES[selectedToken as keyof typeof TOKEN_ADDRESSES],
-        amountWei
+      const contract = new ethers.Contract(
+        DELEGATION_MANAGER_ADDRESS,
+        DelegationManagerABI
       );
-      await depositTx.wait();
+      const depositData = contract.interface.encodeFunctionData(
+        "depositToAllowedOperator",
+        [tokenAddress, amountWei]
+      );
+
+      const depositTx = await sendTransaction({
+        to: DELEGATION_MANAGER_ADDRESS,
+        data: depositData,
+      });
+
+      // Wait for deposit transaction
+      await provider.waitForTransaction(depositTx.hash);
 
       // Refresh balances
       await fetchBalances();
@@ -160,16 +168,27 @@ export function DelegationActions() {
 
     setIsLoading(true);
     try {
-      const contract = await getContract();
-      if (!contract) throw new Error("Failed to get contract");
-
       const amountWei = ethers.parseUnits(amount, 18);
+      const tokenAddress =
+        TOKEN_ADDRESSES[selectedToken as keyof typeof TOKEN_ADDRESSES];
 
-      const withdrawTx = await contract.claimFromAllowedOperator(
-        TOKEN_ADDRESSES[selectedToken as keyof typeof TOKEN_ADDRESSES],
-        amountWei
+      const contract = new ethers.Contract(
+        DELEGATION_MANAGER_ADDRESS,
+        DelegationManagerABI
       );
-      await withdrawTx.wait();
+      const withdrawData = contract.interface.encodeFunctionData(
+        "claimFromAllowedOperator",
+        [tokenAddress, amountWei]
+      );
+
+      const withdrawTx = await sendTransaction({
+        to: DELEGATION_MANAGER_ADDRESS,
+        data: withdrawData,
+      });
+
+      // Wait for withdrawal transaction
+      const provider = getProvider();
+      await provider.waitForTransaction(withdrawTx.hash);
 
       // Refresh balances
       await fetchBalances();
