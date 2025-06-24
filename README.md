@@ -51,7 +51,7 @@ It also serves as a tool for information aggregation, providing an accurate pict
 <img src="./docs/img/homepage.png" alt="Homepage" width="600" height="300">
 <br>
 <br>
-<strong>3- All the latest market signals are displayed in the homepage, together with price information and current users' trades.</strong>
+<strong>3- All the latest signals, price information and current users' trades are displayed in the homepage.</strong>
 <img src="./docs/img/market-signals.png" alt="Market Signals" width="600" height="350">
 <br>
 <br>
@@ -71,7 +71,7 @@ It also serves as a tool for information aggregation, providing an accurate pict
 - BNB:
   - <strong>AI:</strong> Senti acts as a Personalized Financial Advisor, guiding users through the market and maximizing their results. Our solution is unbiased and unaffected by human psychology, eliminating impulsive behavior and panic selling to enable users to trade at their best.
 
-- <strong>Trojan Trading:</strong>
+- Trojan Trading:
   - <strong>Microservice for Memecoin Trading Analytics:</strong> Senti analyzes the market to identify the best trading opportunities using real-time price feeds and a signal generator script based on the RSI indicator. The system is designed to be extensible, allowing unlimited integration of new indicators, unlocking the full potential of the signal generation engine for various use cases.
 
 ## 5. Submission details
