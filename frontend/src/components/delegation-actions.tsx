@@ -30,7 +30,7 @@ interface TokenBalance {
 }
 
 export function DelegationActions() {
-  const { user, authenticated, ready, sendTransaction } = usePrivy();
+  const { user, authenticated, ready } = usePrivy();
   const [selectedToken, setSelectedToken] = useState<string>("BTC");
   const [amount, setAmount] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
@@ -64,6 +64,20 @@ export function DelegationActions() {
       "function decimals() view returns (uint8)",
     ];
     return new ethers.Contract(tokenAddress, tokenABI, provider);
+  };
+
+  // Get provider and signer for external wallet
+  const getWalletProvider = () => {
+    if (!user?.wallet) return null;
+
+    // For external wallets (like MetaMask), we need to use window.ethereum
+    if (typeof window !== "undefined" && window.ethereum) {
+      return new ethers.BrowserProvider(
+        window.ethereum as unknown as ethers.Eip1193Provider
+      );
+    }
+
+    return null;
   };
 
   // Fetch balances
@@ -106,27 +120,45 @@ export function DelegationActions() {
   const handleDeposit = async () => {
     if (!amount || !user?.wallet?.address) return;
 
+    console.log("handleDeposit");
+    console.log(amount);
+    console.log(user?.wallet?.address);
+    console.log(selectedToken);
+    console.log(balances);
+    console.log(delegatedBalances);
+
     setIsLoading(true);
     try {
       const amountWei = ethers.parseUnits(amount, 18);
       const tokenAddress =
         TOKEN_ADDRESSES[selectedToken as keyof typeof TOKEN_ADDRESSES];
 
+      // Get wallet provider and signer
+      const walletProvider = getWalletProvider();
+      if (!walletProvider) {
+        throw new Error("No wallet provider available");
+      }
+
+      const signer = await walletProvider.getSigner();
+
       // First approve the delegation manager to spend tokens
       const tokenABI = [
         "function approve(address spender, uint256 amount) returns (bool)",
       ];
-      const tokenContract = new ethers.Contract(tokenAddress, tokenABI);
+      const tokenContract = new ethers.Contract(tokenAddress, tokenABI, signer);
 
       const approveData = tokenContract.interface.encodeFunctionData(
         "approve",
         [DELEGATION_MANAGER_ADDRESS, amountWei]
       );
 
-      const approveTx = await sendTransaction({
+      console.log("Sending approval transaction...");
+      const approveTx = await signer.sendTransaction({
         to: tokenAddress,
         data: approveData,
       });
+
+      console.log("Approval transaction hash:", approveTx.hash);
 
       // Wait for approval transaction
       const provider = getProvider();
@@ -135,17 +167,21 @@ export function DelegationActions() {
       // Then deposit
       const contract = new ethers.Contract(
         DELEGATION_MANAGER_ADDRESS,
-        DelegationManagerABI
+        DelegationManagerABI,
+        signer
       );
       const depositData = contract.interface.encodeFunctionData(
         "depositToAllowedOperator",
         [tokenAddress, amountWei]
       );
 
-      const depositTx = await sendTransaction({
+      console.log("Sending deposit transaction...");
+      const depositTx = await signer.sendTransaction({
         to: DELEGATION_MANAGER_ADDRESS,
         data: depositData,
       });
+
+      console.log("Deposit transaction hash:", depositTx.hash);
 
       // Wait for deposit transaction
       await provider.waitForTransaction(depositTx.hash);
@@ -156,6 +192,12 @@ export function DelegationActions() {
       alert("Deposit successful!");
     } catch (error) {
       console.error("Error depositing:", error);
+      console.error("Error type:", typeof error);
+      console.error("Error object:", error);
+      if (error instanceof Error) {
+        console.error("Error message:", error.message);
+        console.error("Error stack:", error.stack);
+      }
       alert("Deposit failed. Please check your balance and try again.");
     } finally {
       setIsLoading(false);
@@ -172,16 +214,25 @@ export function DelegationActions() {
       const tokenAddress =
         TOKEN_ADDRESSES[selectedToken as keyof typeof TOKEN_ADDRESSES];
 
+      // Get wallet provider and signer
+      const walletProvider = getWalletProvider();
+      if (!walletProvider) {
+        throw new Error("No wallet provider available");
+      }
+
+      const signer = await walletProvider.getSigner();
+
       const contract = new ethers.Contract(
         DELEGATION_MANAGER_ADDRESS,
-        DelegationManagerABI
+        DelegationManagerABI,
+        signer
       );
       const withdrawData = contract.interface.encodeFunctionData(
         "claimFromAllowedOperator",
         [tokenAddress, amountWei]
       );
 
-      const withdrawTx = await sendTransaction({
+      const withdrawTx = await signer.sendTransaction({
         to: DELEGATION_MANAGER_ADDRESS,
         data: withdrawData,
       });
