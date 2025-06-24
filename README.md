@@ -28,8 +28,9 @@
 <!-- TOC -->
   - [1. Overview](#1-overview)
   - [2. Target audience](#2-target-audience)
-  - [3. Submission details](#3-submission-details)
-
+  - [3. How to use Senti](#3-how-to-use-senti)
+  - [4. Bounties](#4-bounties)
+  - [5. Submission details](#5-submission-details)
 
 ## 1. Overview
 
@@ -45,14 +46,18 @@ It also serves as a tool for information aggregation, providing an accurate pict
 <strong>1- Connect your wallet via Privy</strong><br>
 <img src="./docs/img/connect-wallet.png" alt="Connect Wallet" width="600" height="300">
 <br>
+<br>
 <strong>2- Check the current market sentiment based on users' activity</strong>
 <img src="./docs/img/homepage.png" alt="Homepage" width="600" height="300">
+<br>
 <br>
 <strong>3- All the latest market signals are displayed in the homepage. Price information and current users' trades are also included in this page.</strong>
 <img src="./docs/img/market-signals.png" alt="Market Signals" width="600" height="350">
 <br>
+<br>
 <strong>4- The market sentiment section dives deep into the CMC Fear & Greed index, giving historical information on the index and displaying statistics regarding the crypto market.</strong><br>
 <img src="./docs/img/sentiment-analysis.png" alt="Sentiment Analysis" width="600" height="350">
+<br>
 <br>
 <strong>5- Users can see a complete list of all the trading actions in the Trading History page, as well as the total volume traded, buy/sell ratio, and other trading statistics.</strong><br>
 <img src="./docs/img/trading-history.png" alt="Trading History" width="600" height="350">
